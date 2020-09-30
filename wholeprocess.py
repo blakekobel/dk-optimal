@@ -6,6 +6,7 @@ import time
 import random
 import pandas as pd
 import os
+from io import StringIO
 
 
 def scrape_fantasypros():
@@ -38,6 +39,9 @@ def scrape_fantasypros():
 def scrape_dk(week):
     dk_url = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId=40224"
     site = requests.get(dk_url)
+    soup_sref = BeautifulSoup(site.content, 'lxml').find('p').text
+    df = pd.read_csv(StringIO(soup_sref))
+    print(df)
     with open(os.path.join("//Users//kobelb//Documents//dk-optimal//DKsalaries_week{0}.csv".format(week)), "wb") as code:
         code.write(site.content)
     # pass
