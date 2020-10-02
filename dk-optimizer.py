@@ -41,6 +41,7 @@ def scrape_fantasypros():
 
     fantasypros_proj = pd.DataFrame(
         players, columns=['Name', 'Projected Points'])
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace('.', '')
     return fantasypros_proj
 
 
@@ -50,6 +51,7 @@ def scrape_dk(group_id):
     site = requests.get(dk_url)
     soup_sref = BeautifulSoup(site.content, 'lxml').find('p').text
     df = pd.read_csv(StringIO(soup_sref))
+    df['Name'] = df['Name'].str.replace('.', '')
     return df
 
 
@@ -175,7 +177,7 @@ def send_email(score_string, week):
             <html>
             <p>
             <h1>Draft Kings Week {0} Optimal Lineups</h1>
-            <h2> Here are the early projections for this upcoming weekend. More to come as the week progresses.
+            <h2> Here are the Friday projections for this upcoming weekend. More to come on Sunday.
             <p>
             <h3>Below you will see 3 lineups. Each of the lineups is dependent on what position you want to use as a flex (RB/WR/TE). These projections are based on the projections from sites such as the NFL, CBS, and Stats.com.
             </h3>
@@ -220,7 +222,7 @@ def main():
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)
-    print(proj_and_dk)
+    # print(proj_and_dk)
 
     # master_df = pd.read_csv('week_4.csv')
     extra_pos = [[3, 3, 1], [2, 4, 1], [2, 3, 2]]
@@ -232,7 +234,7 @@ def main():
         big_string += '<strong>'+pos_name[x]
         small_str = summary(prob)
         big_string += small_str
-    print(big_string)
+    # print(big_string)
     send_email(big_string, week)
 
 

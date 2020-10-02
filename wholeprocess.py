@@ -6,6 +6,15 @@ import time
 import random
 import pandas as pd
 import os
+import numpy as np
+from itertools import permutations
+from pulp import *
+import smtplib
+from smtplib import SMTPException
+from Google import Create_Service
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from io import StringIO
 
 
@@ -32,25 +41,23 @@ def scrape_fantasypros():
 
     fantasypros_proj = pd.DataFrame(
         players, columns=['Name', 'Projected Points'])
-    fantasypros_proj.to_csv("fpros.csv")
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace('.', '')
     return fantasypros_proj
 
 
-def scrape_dk(week):
-    dk_url = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId=40224"
+def scrape_dk(group_id):
+    dk_url = "https://www.draftkings.com/lineup/getavailableplayerscsv?contestTypeId=21&draftGroupId={0}".format(
+        group_id)
     site = requests.get(dk_url)
     soup_sref = BeautifulSoup(site.content, 'lxml').find('p').text
     df = pd.read_csv(StringIO(soup_sref))
-    print(df)
-    with open(os.path.join("//Users//kobelb//Documents//dk-optimal//DKsalaries_week{0}.csv".format(week)), "wb") as code:
-        code.write(site.content)
-    # pass
+    df['Name'] = df['Name'].str.replace('.', '')
+    return df
 
 
-def make_master_df(projections, week):
-    dk = pd.read_csv('DKsalaries_week{0}.csv'.format(week))
+def make_master_df(projections, week, dk_scrape):
+    dk = dk_scrape
     proj = projections
-    historical = pd.read_csv('pos_sal_avg.csv')
 
     proj = proj[~proj['Projected Points'].isin(
         ['-', '_', ' ', '+', '='])]
@@ -58,34 +65,22 @@ def make_master_df(projections, week):
     dk = dk.drop(['Name + ID', 'ID', 'Game Info'], axis=1)
 
     master_df = dk.merge(proj, left_on='Name', right_on='Name')
-    master_df = master_df.merge(
-        historical, left_on=['Position', 'Salary'], right_on=['Pos', 'DK salary'])
-    master_df = master_df.drop(['Roster Position', 'Pos', 'DK salary'], axis=1)
+    master_df = master_df.drop(['Roster Position'], axis=1)
     master_df = master_df.rename(
-        columns={"Position": "Pos", "DK points": "dk_pos_sal_avg_points"})
+        columns={"Position": "Pos"})
 
-    # master_df['Points Per Dollar'] = master_df['Projected Points'] / \
-    #     master_df['Salary']
-    # master_df['Points Per 1K'] = master_df['Projected Points'] / 1000
-    # master_df['Value'] = master_df['Projected Points'] / \
-    #     (master_df['Salary']/1000)
-
-    print(master_df)
-
-    # team1 = master_df[master_df['Name'].isin(['Mitchell Trubisky',
-    #                                           'Austin Ekeler', 'Devin Singletary', 'Julio Jones', 'Michael Gallup', 'Jamison Crowder', 'Travis Kelce', 'Diontae Johnson'])]
-    # team2 = master_df[master_df['Name'].isin(['Kyler Murray',
-    #                                           'Austin Ekeler', 'Kenyan Drake', 'Julio Jones', 'Amari Cooper', 'Jamison Crowder', 'Zach Ertz', 'Diontae Johnson'])]
-
-    # print(team2['Projected Points'].sum())
-    master_df.to_csv("week_{0}.csv".format(week), index=False)
+    return master_df
 
 
 def main():
-    week = input("Enter week number: ")
+    week = "4"
+    group_id = "40224"
     proj = scrape_fantasypros()
-    scrape_dk(week)
-    make_master_df(proj, week)
+    dk_scrape = scrape_dk(group_id)
+    proj_and_dk = make_master_df(proj, week, dk_scrape)
+    proj.to_csv('fpros.csv'.format(week))
+    dk_scrape.to_csv('DKsalaries_week{}.csv'.format(week))
+    proj_and_dk.to_csv('week_{}.csv'.format(week))
 
 
 main()
