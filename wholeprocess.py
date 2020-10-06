@@ -42,6 +42,8 @@ def scrape_fantasypros():
     fantasypros_proj = pd.DataFrame(
         players, columns=['Name', 'Projected Points'])
     fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace('.', '')
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace(' II', '')
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace(' III', '')
     return fantasypros_proj
 
 
@@ -73,14 +75,14 @@ def make_master_df(projections, week, dk_scrape):
 
 
 def main():
-    week = "4"
-    group_id = "40224"
+    week = "5"
+    group_id = "40304"
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)
-    proj.to_csv('fpros.csv'.format(week))
-    dk_scrape.to_csv('DKsalaries_week{}.csv'.format(week))
-    proj_and_dk.to_csv('week_{}.csv'.format(week))
+    proj.to_csv('fpros.csv'.format(week), index=False)
+    dk_scrape.to_csv('DKsalaries_week{}.csv'.format(week), index=False)
+    proj_and_dk.to_csv('week_{}.csv'.format(week), index=False)
 
 
 main()

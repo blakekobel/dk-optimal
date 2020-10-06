@@ -34,6 +34,8 @@ def scrape_fantasypros():
                 name = name.replace('Mitch', 'Mitchell')
             if name == 'Chris Herndon IV':
                 name = name.replace('Herndon IV', 'Herndon')
+            if name == 'Clyde Edwards-Helaire':
+                name = name.replace('Edwards', 'ED')
             if name in ['Pittsburgh Steelers', 'Tampa Bay Buccaneers', 'Indianapolis Colts', 'San Francisco 49ers', 'Cleveland Browns', 'Los Angeles Chargers', 'New England Patriots', 'Los Angeles Rams', 'New York Giants', 'Arizona Cardinals', 'Jacksonville Jaguars', 'Washington Football Team', 'Philadelphia Eagles', 'Carolina Panthers', 'Minnesota Vikings', 'Chicago Bears', 'Buffalo Bills', 'Atlanta Falcons', 'Dallas Cowboys', 'Tennessee Titans', 'Kansas City Chiefs', 'Cincinnati Bengals', 'Detroit Lions', 'New Orleans Saints', 'Seattle Seahawks', 'Miami Dolphins', 'Baltimore Ravens', 'New York Jets', 'Denver Broncos', 'Houston Texans', 'Las Vegas Raiders', 'Green Bay Packers']:
                 name = name.split(' ')[-1] + " "
             proj = x.findAll('td')[-1].text
@@ -42,6 +44,8 @@ def scrape_fantasypros():
     fantasypros_proj = pd.DataFrame(
         players, columns=['Name', 'Projected Points'])
     fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace('.', '')
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace(' II', '')
+    fantasypros_proj['Name'] = fantasypros_proj['Name'].str.replace(' III', '')
     return fantasypros_proj
 
 
@@ -163,9 +167,8 @@ def summary(prob):
 
 
 def send_email(score_string, week):
-    email_list = ['Blakekobel@gmail.com']
-    # , 'jake_mdws@yahoo.com', 'Luke.darity@yahoo.com', 'Potzmanm1@gmail.com', 'Ctaylor9502@gmail.com', 'zackwool@gmail.com',
-    #               'zfletcher018@gmail.com', 'ericnews512@gmail.com', 'wadehagebusch@gmail.com', 'kodykingree@gmail.com', 't.hahn3@yahoo.com', 'bkobel928@lsr7.net']
+    email_list = ['Blakekobel@gmail.com', 'jake_mdws@yahoo.com', 'Luke.darity@yahoo.com', 'Potzmanm1@gmail.com', 'Ctaylor9502@gmail.com', 'zackwool@gmail.com',
+                  'zfletcher018@gmail.com', 'ericnews512@gmail.com', 'wadehagebusch@gmail.com', 'kodykingree@gmail.com', 't.hahn3@yahoo.com', 'bkobel928@lsr7.net']
     CLIENT_SECRET_FILE = 'client_secret.json'
     API_NAME = 'gmail'
     API_VERSION = 'v1'
@@ -177,7 +180,7 @@ def send_email(score_string, week):
             <html>
             <p>
             <h1>Draft Kings Week {0} Optimal Lineups</h1>
-            <h2> Here are the Friday projections for this upcoming weekend. More to come on Sunday.
+            <h2> Here are the early week projections for Sundays games. Another email will be sent out later in the week.
             <p>
             <h3>Below you will see 3 lineups. Each of the lineups is dependent on what position you want to use as a flex (RB/WR/TE). These projections are based on the projections from sites such as the NFL, CBS, and Stats.com.
             </h3>
@@ -217,8 +220,8 @@ def send_email(score_string, week):
 
 
 def main():
-    week = "4"
-    group_id = "40224"
+    week = "5"
+    group_id = "40304"
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)
