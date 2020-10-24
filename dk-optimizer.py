@@ -199,7 +199,7 @@ def send_email(score_string, week):
 
         try:
             sg = SendGridAPIClient(
-                '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')
+                os.environ.get('SENDGRID_API_KEY'))
             response = sg.send(message)
             print(response.status_code)
             # print(response.body)
