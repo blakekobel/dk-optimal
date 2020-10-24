@@ -1,5 +1,5 @@
 beautifulsoup4==4.6.3
 bs4==0.0.1
-numpy==1.18.1 x
-pandas==1.0.1 x
-PuLP==2.2 x
+pandas==1.0.1
+PuLP==2.2
+sendgrid==6.4.7
