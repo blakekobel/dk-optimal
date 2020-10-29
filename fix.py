@@ -1,14 +1,21 @@
+import datetime as dt
 from bs4 import BeautifulSoup
 import requests
+import re
+import time
+import random
 import pandas as pd
+import os
+import numpy as np
 from itertools import permutations
 from pulp import *
+import smtplib
+from smtplib import SMTPException
+from Google import Create_Service
+import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from io import StringIO
-import os
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-import re
-import datetime
 
 
 def scrape_fantasypros():
@@ -158,27 +165,28 @@ def summary(prob):
 
 
 def send_email(score_string, week):
-    wkday = datetime.datetime.today().weekday()
-    hour = datetime.datetime.now().hour
-    if wkday == 3:
-        daymsg = "Here are the Thursday projections for Sunday's Games. More projections will be sent out on Sunday"
-    elif wkday == 6 and hour < 10:
-        daymsg = "Here are the Sunday Morning projections for Today's Games. More projections will be sent out in the 11 o clock hour."
-    else:
-        daymsg = "Here are the last projections for today's Games. Good Luck!"
+    email_list = ['Blakekobel@gmail.com', 'jake_mdws@yahoo.com', 'Luke.darity@yahoo.com', 'Potzmanm1@gmail.com', 'Ctaylor9502@gmail.com', 'zackwool@gmail.com',
+                  'zfletcher018@gmail.com', 'ericnews512@gmail.com', 'wadehagebusch@gmail.com', 'kodykingree@gmail.com', 't.hahn3@yahoo.com', 'bkobel928@lsr7.net']
+    CLIENT_SECRET_FILE = 'client_secret.json'
+    API_NAME = 'gmail'
+    API_VERSION = 'v1'
+    SCOPES = ['https://mail.google.com/']
+
+    service = Create_Service(CLIENT_SECRET_FILE, API_NAME, API_VERSION, SCOPES)
+
     emailMsg = """ 
             <html>
             <p>
             <h1>Draft Kings Week {0} Optimal Lineups</h1>
-            <h2>{1}</h2>
-            <br>
-            <h3>Below you will see 3 lineups. Each of the lineups is dependent on what position you want to use as a flex (RB/WR/TE). These projections are based on the projections from sites such as the NFL, CBS, and Stats.com. I strongly recommend these projections be used in 50/50 or Double up formats because tournament style line-ups are very unpredictable and are typically won by low floor-high ceiling players that projections can't account for.
+            <h2> Here are the projections for Today's games. Another email may be sent out around 11:30.
+            <p>
+            <h3>Below you will see 3 lineups. Each of the lineups is dependent on what position you want to use as a flex (RB/WR/TE). These projections are based on the projections from sites such as the NFL, CBS, and Stats.com.
             </h3>
             <h4>All the lineups are PPR and now includes defenses as well.
             </h4>
             <br>
             <body>
-            """.format(week, daymsg) + score_string.replace('\n', '<br>') + """
+            """.format(week) + score_string.replace('\n', '<br>') + """
             </body>
             <p style="font-size: 30px;">From your friends at <a href="https://www.FastBreakStats.com">Fast Break Stats</a></p>
             <br><br><small>
@@ -195,32 +203,23 @@ def send_email(score_string, week):
                 <li>Past performances do not guarantee success in the future. There are no dead certainties when it comes to betting so only risk money that you can comfortable afford to lose.</li>
             </ol></small>
             </html>"""
-
-    email_list = ['Blakekobel@gmail.com']
-    # , 'jake_mdws@yahoo.com', 'Luke.darity@yahoo.com', 'Potzmanm1@gmail.com', 'Ctaylor9502@gmail.com', 'zackwool@gmail.com',
-    #               'zfletcher018@gmail.com', 'ericnews512@gmail.com', 'wadehagebusch@gmail.com', 'kodykingree@gmail.com', 't.hahn3@yahoo.com', 'bkobel928@lsr7.net']
+    # score_string
 
     for email_addr in email_list:
-        message = Mail(
-            from_email='contact@fastbreakstats.com',
-            to_emails=email_addr,
-            subject='Draft Kings Week {} Projections'.format(week),
-            html_content=emailMsg)
+        mimeMessage = MIMEMultipart()
+        mimeMessage['to'] = email_addr
+        mimeMessage['subject'] = 'Draft Kings Week 7 Projections'
+        mimeMessage.attach(MIMEText(emailMsg, 'html'))
+        raw_string = base64.urlsafe_b64encode(mimeMessage.as_bytes()).decode()
 
-        try:
-            sg = SendGridAPIClient(
-                os.environ.get('SENDGRID_API_KEY'))
-            response = sg.send(message)
-            print(response.status_code)
-            # print(response.body)
-            # print(response.headers)
-        except Exception as e:
-            print(e.message)
+        message = service.users().messages().send(
+            userId='me', body={'raw': raw_string}).execute()
+        print(message)
 
 
 def main():
-    week = "8"
-    group_id = "41095"
+    week = "7"
+    group_id = "40909"
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)

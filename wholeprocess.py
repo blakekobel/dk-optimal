@@ -75,8 +75,8 @@ def make_master_df(projections, week, dk_scrape):
 
 
 def main():
-    week = "7"
-    group_id = "40909"
+    week = "8"
+    group_id = "41095"
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)
