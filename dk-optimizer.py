@@ -27,6 +27,8 @@ def scrape_fantasypros():
                 name = name.replace('Mitch', 'Mitchell')
             if name == 'Chris Herndon IV':
                 name = name.replace('Herndon IV', 'Herndon')
+            if name == 'Austin Ekeler':
+                name = name.replace('Ekeler', 'jim')
             if name in ['Pittsburgh Steelers', 'Tampa Bay Buccaneers', 'Indianapolis Colts', 'San Francisco 49ers', 'Cleveland Browns', 'Los Angeles Chargers', 'New England Patriots', 'Los Angeles Rams', 'New York Giants', 'Arizona Cardinals', 'Jacksonville Jaguars', 'Washington Football Team', 'Philadelphia Eagles', 'Carolina Panthers', 'Minnesota Vikings', 'Chicago Bears', 'Buffalo Bills', 'Atlanta Falcons', 'Dallas Cowboys', 'Tennessee Titans', 'Kansas City Chiefs', 'Cincinnati Bengals', 'Detroit Lions', 'New Orleans Saints', 'Seattle Seahawks', 'Miami Dolphins', 'Baltimore Ravens', 'New York Jets', 'Denver Broncos', 'Houston Texans', 'Las Vegas Raiders', 'Green Bay Packers']:
                 name = name.split(' ')[-1] + " "
             proj = x.findAll('td')[-1].text
@@ -169,8 +171,8 @@ def send_email(score_string, week):
     emailMsg = """ 
             <html>
             <p>
-            <h1>Draft Kings Week {0} Optimal Lineups</h1>
-            <h2>{1}</h2>
+            <h1>Draft Kings Week {0} Thanksgiving Optimal Lineups</h1>
+            <h2>This is a special Thanksgiving Lineup to help you win money while you stuff your face with delicious food! Enjoy! One more will be sent out Wednesday evening.</h2>
             <br>
             <h3>Below you will see 3 lineups. Each of the lineups is dependent on what position you want to use as a flex (RB/WR/TE). These projections are based on the projections from sites such as the NFL, CBS, and Stats.com. I strongly recommend these projections be used in 50/50 or Double up formats because tournament style line-ups are very unpredictable and are typically won by low floor-high ceiling players that projections can't account for.
             </h3>
@@ -178,7 +180,7 @@ def send_email(score_string, week):
             </h4>
             <br>
             <body>
-            """.format(week, daymsg) + score_string.replace('\n', '<br>') + """
+            """.format(week) + score_string.replace('\n', '<br>') + """
             </body>
             <p style="font-size: 30px;">From your friends at <a href="https://www.FastBreakStats.com">Fast Break Stats</a></p>
             <br><br><small>
@@ -219,14 +221,14 @@ def send_email(score_string, week):
 
 
 def main():
-    week = "8"
-    group_id = "41095"
+    week = "13"
+    group_id = "42041"
     proj = scrape_fantasypros()
     dk_scrape = scrape_dk(group_id)
     proj_and_dk = make_master_df(proj, week, dk_scrape)
     # print(proj_and_dk)
 
-    # master_df = pd.read_csv('week_4.csv')
+    # master_df = pd.read_csv('week_10.csv')
     extra_pos = [[3, 3, 1], [2, 4, 1], [2, 3, 2]]
     pos_name = ["RB Flex ", "WR Flex ", "TE Flex "]
     cap = 50000
